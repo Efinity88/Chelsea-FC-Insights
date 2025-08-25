@@ -1,23 +1,82 @@
-#Chelsea Transfers in 25/26
 import requests
 from bs4 import BeautifulSoup
 
-url = 'https://www.transfermarkt.co.uk/fc-chelsea/transfers/verein/631/saison_id/2025'
+base_url = 'https://www.transfermarkt.co.uk/fc-chelsea/transfers/verein/631/saison_id/{}'
 headers = {'User-Agent': 'Mozilla/5.0'}
-response = requests.get(url, headers=headers)
-soup = BeautifulSoup(response.content, 'html.parser')
 
-# Find all player rows (those with class 'odd' or 'even')
-player_rows = soup.find_all('tr', class_=['odd', 'even'])
+# Choose the last 5 seasons (replace 2025 with current season if needed)
+seasons = [2024, 2023, 2022, 2021,2020, 2019]
 
-players = []
+all_signings = []
+all_leavers = []
 
-for row in player_rows:
-    name_cell = row.find('td', class_='hauptlink')
-    if name_cell:
-        name_tag = name_cell.find('a')
-        if name_tag:
-            player_name = name_tag.get_text(strip=True)
-            players.append(player_name)
+for season in seasons:
+    url = base_url.format(season)
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    tables = soup.find_all('table', class_='items')
+    if len(tables) < 2:
+        print(f"Warning: No tables found for {season}")
+        continue
 
-print(players)
+    # --- Arrivals ---
+    arrivals_table = tables[0]
+    rows = arrivals_table.find_all('tr', class_=['odd', 'even'])
+    for row in rows:
+        cols = row.find_all('td')
+        if len(cols) < 8:
+            continue
+
+        all_signings.append({
+            'Season': season,
+            'Name': cols[1].find('a').get_text(strip=True) if cols[1].find('a') else '',
+            'Position': cols[4].get_text(strip=True),
+            'Age': cols[5].get_text(strip=True),
+            'Nationality': [img['title'] for img in cols[6].find_all('img')],
+            'Previous Team': cols[9].get_text(strip=True),
+            'Transfer Fee': cols[11].get_text(strip=True),
+            'Status': 'Arrival'
+        })
+
+    # --- Departures ---
+    departures_table = tables[1]
+    rows = departures_table.find_all('tr', class_=['odd', 'even'])
+    for row in rows:
+        cols = row.find_all('td')
+        if len(cols) < 8:
+            continue
+
+        all_leavers.append({
+            'Season': season,
+            'Name': cols[1].find('a').get_text(strip=True) if cols[1].find('a') else '',
+            'Position': cols[4].get_text(strip=True),
+            'Age': cols[5].get_text(strip=True),
+            'Nationality': [img['title'] for img in cols[6].find_all('img')],
+            'Next Team': cols[9].get_text(strip=True),
+            'Transfer Fee': cols[11].get_text(strip=True),
+            'Status': 'Departure'
+        })
+
+# Print results
+print("\n--- ARRIVALS ---")
+for player in all_signings:
+    print(player)
+
+print("\n--- DEPARTURES ---")
+for player in all_leavers:
+    print(player)
+
+
+Signings = pd.DataFrame(all_signings)
+Signings[['Nationality', 'Secondary Nationality']] = Signings['Nationality'].apply(
+    lambda x: pd.Series([x[0], x[1] if len(x) > 1 else None]) if isinstance(x, list) else pd.Series([x, None])
+)
+Signings
+
+
+Departures = pd.DataFrame(all_leavers)
+Departures[['Nationality', 'Secondary Nationality']] = Departures['Nationality'].apply(
+    lambda x: pd.Series([x[0], x[1] if len(x) > 1 else None]) if isinstance(x, list) else pd.Series([x, None])
+)
+Departures
