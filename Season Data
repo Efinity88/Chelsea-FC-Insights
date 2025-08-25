@@ -1,0 +1,19 @@
+import pandas as pd
+
+#Chelsea season data
+cf25 = pd.read_html('https://fbref.com/en/squads/cff3d9bb/2024-2025/Chelsea-Stats',
+                  attrs ={"id":"matchlogs_for"})[0]
+cf24 = pd.read_html('https://fbref.com/en/squads/cff3d9bb/2023-2024/Chelsea-Stats',
+                  attrs ={"id":"matchlogs_for"})[0]
+cf23 = pd.read_html('https://fbref.com/en/squads/cff3d9bb/2022-2023/Chelsea-Stats',
+                  attrs ={"id":"matchlogs_for"})[0]
+cf22 = pd.read_html('https://fbref.com/en/squads/cff3d9bb/2021-2022/Chelsea-Stats',
+                  attrs ={"id":"matchlogs_for"})[0]
+cf21 = pd.read_html('https://fbref.com/en/squads/cff3d9bb/2020-2021/Chelsea-Stats',
+                  attrs ={"id":"matchlogs_for"})[0]
+cf20 = pd.read_html('https://fbref.com/en/squads/cff3d9bb/2019-2020/Chelsea-Stats',
+                  attrs ={"id":"matchlogs_for"})[0]
+
+cf_games = pd.concat([cf25,cf24,cf23,cf22,cf21,cf20] )
+cf_games = cf_games[['Season','Round','Venue','Result','GF','GA','Opponent','xG','xGA','Poss','Formation']]
+cf_games
