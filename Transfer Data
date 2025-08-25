@@ -1,0 +1,23 @@
+#Chelsea Transfers in 25/26
+import requests
+from bs4 import BeautifulSoup
+
+url = 'https://www.transfermarkt.co.uk/fc-chelsea/transfers/verein/631/saison_id/2025'
+headers = {'User-Agent': 'Mozilla/5.0'}
+response = requests.get(url, headers=headers)
+soup = BeautifulSoup(response.content, 'html.parser')
+
+# Find all player rows (those with class 'odd' or 'even')
+player_rows = soup.find_all('tr', class_=['odd', 'even'])
+
+players = []
+
+for row in player_rows:
+    name_cell = row.find('td', class_='hauptlink')
+    if name_cell:
+        name_tag = name_cell.find('a')
+        if name_tag:
+            player_name = name_tag.get_text(strip=True)
+            players.append(player_name)
+
+print(players)
