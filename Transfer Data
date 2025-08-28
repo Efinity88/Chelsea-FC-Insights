@@ -68,15 +68,18 @@ for player in all_leavers:
     print(player)
 
 
+#Remove Loans
 Signings = pd.DataFrame(all_signings)
 Signings[['Nationality', 'Secondary Nationality']] = Signings['Nationality'].apply(
     lambda x: pd.Series([x[0], x[1] if len(x) > 1 else None]) if isinstance(x, list) else pd.Series([x, None])
 )
+Signings = Signings[~Signings["Transfer Fee"].str.contains("loan", case=False, na=False)]
 Signings
 
-
+#Remove Loans
 Departures = pd.DataFrame(all_leavers)
 Departures[['Nationality', 'Secondary Nationality']] = Departures['Nationality'].apply(
     lambda x: pd.Series([x[0], x[1] if len(x) > 1 else None]) if isinstance(x, list) else pd.Series([x, None])
 )
+Departures = Departures[~Departures["Transfer Fee"].str.contains("loan", case=False, na=False)]
 Departures
